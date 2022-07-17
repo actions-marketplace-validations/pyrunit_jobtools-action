@@ -1,0 +1,42 @@
+name: 'Run Python (jobtools)'
+description: 'Runs a Python script with the jobtools utility'
+
+inputs:
+  script:
+    description: 'Indicates the script or module to run'
+    required: true
+  function:
+    description: 'Indicates the function in the script or module you want to run'
+    required: true
+  workingFolder:
+    description: 'Indicates the working folder'
+    required: true
+  installJobtools:
+    description: 'Indicates if jobtools needs to be installed.'
+    required: true
+    default: 'true'
+  args:
+    description: 'Indicates if the shell should be initialized. This should be done the first time this action runs in a worker'
+    required: false
+    default: ''
+
+runs:
+  using: "composite"
+  steps:
+    - name: Preparing
+      shell: bash
+      run: |
+        if ${{ inputs.installJobtools }}; then
+          pip install jobtools
+        fi
+
+        if [[ -n ${{ inputs.workingFolder }} ]]
+        then
+          cd ${{ inputs.workingFolder }}
+        fi
+    - name: Running
+      shell: bash
+      run: |
+        echo "::debug::Running jobtools ${{ inputs.script }} ${{ inputs.function }} ${{ inputs.args }}"
+
+        jobtools ${{ inputs.script }} ${{ inputs.function }} ${{ inputs.args }}
